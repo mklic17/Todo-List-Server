@@ -16,6 +16,7 @@ router.use(function (req, res, next) {
   	});
 });
 
+
 /* POST login */
 /* requires the either the username or password with a Password to login. */
 router.post("/login", async function (req, res, next) {
@@ -51,7 +52,8 @@ router.post("/login", async function (req, res, next) {
 	}
 });
 
-/* POST register */
+
+/* POST register /auth/register/ */
 /* requires username, email and password to signup. email and username have a unique constraint. 
    If you try to create a 2nd user an expected error is thrown */
 router.post("/register", async function (req, res, next) {
@@ -62,7 +64,11 @@ router.post("/register", async function (req, res, next) {
 				email: req.body.email,
 				password: req.hashedPassword
 			});
-			
+
+			if(req.body.profileImage){
+				user.profileImage = req.body.profileImage;
+			}
+
 			// Insertion into the MongoDB
 			await user.save().then((savedUser) => {
 				return res.status(201).json({
@@ -78,6 +84,10 @@ router.post("/register", async function (req, res, next) {
 	} else {
 		return res.status(401).json({ error: "Invalid " });
 	}
+});
+
+router.patch("/update", async function(req, res, next) {
+	// need to validate the user making the request is the same as the user you are trying to update
 });
 
 // source: https://stackoverflow.com/questions/46155/how-to-validate-an-email-address-in-javascript

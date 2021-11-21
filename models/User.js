@@ -8,8 +8,9 @@ const UserSchema = new Schema({
     username: {type: String, required: true, unique: true, strength: 2}, 
     email: {type: String, required: true, unique: true, strength: 2},
     password: {type: String, required: true,},
-    todo: [{type: Schema.Types.ObjectId, ref: 'Todo'}]
+    todo: [{type: Schema.Types.ObjectId, ref: 'Todo'}],
+    profileImage: {type: String, required: false}
 });
 
-//Export model
+// export model
 module.exports = mongoose.model('User', UserSchema);
