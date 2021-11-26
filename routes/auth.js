@@ -23,22 +23,18 @@ router.post("/login", async function (req, res, next) {
 	if((req.body.username || req.body.email) && req.body.password) {
 		let user;
 		if(req.body.username) {
-			console.log('Username is given for Login');
 			user = await User.findOne().where('username').equals(req.body.username).exec();
 		} else if(req.body.email) {
-			console.log('email is given for Login');
 			user = await User.findOne().where('email').equals(req.body.email).exec();
 		} else {
 			res.status(400).json({ error: "username or email is incorrect" });
 		}
 
 	if (user) {
-		console.log('User found: ' + user.username);
 		return bcrypt.compare(req.body.password, user.password).then(result => {
 			if (result === true) {
-				console.log('Result = true');
 				const token = jwt.sign({ id: user._id }, privateKey, { algorithm: 'RS256' });
-				return res.status(200).json({"access_token": token});
+				return res.status(200).json({"access_token": token, "id": user._id});
 			} else {
 				return res.status(401).json({"error": "Invalid credentials."})
 			}
@@ -57,9 +53,10 @@ router.post("/login", async function (req, res, next) {
 /* requires username, email and password to signup. email and username have a unique constraint. 
    If you try to create a 2nd user an expected error is thrown */
 router.post("/register", async function (req, res, next) {
-	if (req.body.username && req.body.password && req.body.email && req.body.passwordConfirmation && isValidEmail(req.body.email)) {
+	if (req.body.name && req.body.username && req.body.password && req.body.email && req.body.passwordConfirmation && isValidEmail(req.body.email)) {
 		if (req.body.passwordConfirmation === req.body.password) {
 			const user = new User({
+				name: req.body.name,
 				username: req.body.username,
 				email: req.body.email,
 				password: req.hashedPassword
@@ -71,9 +68,11 @@ router.post("/register", async function (req, res, next) {
 
 			// Insertion into the MongoDB
 			await user.save().then((savedUser) => {
+				const token = jwt.sign({ id: user._id }, privateKey, { algorithm: 'RS256' });
 				return res.status(201).json({
 					id: savedUser._id,
-					username: savedUser.username
+					username: savedUser.username,
+					"access_token": token
 				});
 			}).catch((error) => {
 				return res.status(500).json({ error: error.message });

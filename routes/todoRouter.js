@@ -25,8 +25,15 @@ router.use(function(req, res, next) {
 // used Async / Await
 router.get('/', async function(req, res, next) {
     const myToDos = await Todo.find().where('createdBy').equals(req.payload.id).exec();
-    console.log('Found ' + myToDos.length + ' notes');
     return res.status(201).json({todo: myToDos });
+});
+
+// GET: /todo/user/:id
+// returns all of the Todos for the specified userID
+// used Async / Await
+router.get('/user/:id', async function(req, res, next) {
+    const toDos = await Todo.find().where('createdBy').equals(req.params.id).exec();
+    return res.status(201).json({todo: toDos });
 });
 
 
@@ -35,6 +42,14 @@ router.get('/', async function(req, res, next) {
 router.get('/all', async function(req, res, next) {
     const allToDos = await Todo.find().exec();
     return res.status(201).json({todo: allToDos });
+});
+
+
+// GET: /todo/:id returns a single toDo note
+// used Async / Await
+router.get('/:id', async function(req, res, next) {
+    const foudnOneTodo = await Todo.findOneById(req.params.id).exec();
+    return res.status(201).json({todo: foudnOneTodo });
 });
 
 
@@ -68,7 +83,8 @@ router.post('/', function(req, res, next) {
 // DELETE: /todo/:id
 // used .then() to resolve promise
 router.delete('/:id', function(req, res, next) {
-    Todo.findOneAndDelete({ _id: req.params.id }).then((deletedTodo) => {
+    const filter = { _id: req.params.id, createdBy: req.payload.id};
+    Todo.findOneAndDelete(filter).then((deletedTodo) => {
         return res.status(201).json({  success: true });
     }).catch((error) => {
         return res.status(500).json({ error: error.message });
@@ -80,7 +96,7 @@ router.delete('/:id', function(req, res, next) {
 // used .then() to resolve promise
 router.patch('/:id/complete', function(req, res, next) {
     const theDate = Date.now();
-    const filter = { _id: req.params.id};
+    const filter = { _id: req.params.id, createdBy: req.payload.id};
     const update = { completedDate : theDate };
     Todo.findOneAndUpdate(filter, update).then((updatedTodo) => {
         return res.status(201).json({
@@ -90,8 +106,6 @@ router.patch('/:id/complete', function(req, res, next) {
     }).catch((error) => {
         return res.status(500).json({ error: error.message });
     });
-
-    
 }) 
 
 module.exports = router;

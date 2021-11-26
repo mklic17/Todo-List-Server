@@ -5,6 +5,7 @@ const Schema = mongoose.Schema;
     Username & Email have a forced stength level of 2 to perform case-insensitive validations
 */
 const UserSchema = new Schema({
+    name: {type: String, required: true},
     username: {type: String, required: true, unique: true, strength: 2}, 
     email: {type: String, required: true, unique: true, strength: 2},
     password: {type: String, required: true,},

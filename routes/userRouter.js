@@ -7,7 +7,6 @@ const privateKey = process.env.PRIVATE_KEY;
 
 // forces the people accessing to have Authorized user accounts
 router.use(function(req, res, next) {
-    console.log(req.header("Authorization"));
     if (req.header("Authorization")) {
         try {
             req.payload = jwt.verify(req.header("Authorization"), privateKey, { algorithms: ['RS256'] });
@@ -23,15 +22,20 @@ router.use(function(req, res, next) {
 
 // GET: /user/:id
 router.get('/:id', async function(req, res, next) {
-    const allUsers = await User.find({}, 'username').exec();
-    res.status(200).json({users: allUsers});
+    const myUser = await User.findById(req.params.id).exec();
+    return res.status(200).json({
+        name: myUser.name,
+        username: myUser.username,
+        email: myUser.email,
+        profileImage: myUser.profileImage
+    });
 });
 
 
-// GET /user/all
-router.get('/all', async function(req, res, next) {
-    const allUsers = await User.find({}, 'id, username').exec();
-    res.status(200).json({users: allUsers});
+// GET /user/
+router.get('/', async function(req, res, next) {
+    const allUsers = await User.find({}, 'id name profileImage username').exec();
+    res.status(200).json(allUsers);
 });
 
 module.exports = router;
