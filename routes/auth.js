@@ -19,41 +19,41 @@ router.use(function (req, res, next) {
 
 /* POST login */
 /* requires the either the username or password with a Password to login. */
-router.post("/login", async function (req, res, next) {
-	if((req.body.username || req.body.email) && req.body.password) {
-		let user;
-		if(req.body.username) {
-			user = await User.findOne().where('username').equals(req.body.username).exec();
-		} else if(req.body.email) {
-			user = await User.findOne().where('email').equals(req.body.email).exec();
-		} else {
-			res.status(400).json({ error: "username or email is incorrect" });
-		}
-
-	if (user) {
+router.post('/login', async function(req, res, next) {
+	if (req.body.username && req.body.password) {
+	  
+	  const user = await User.findOne().where('username').equals(req.body.username).exec()
+  
+	  if (user) {
 		return bcrypt.compare(req.body.password, user.password).then(result => {
-			if (result === true) {
-				const token = jwt.sign({ id: user._id }, privateKey, { algorithm: 'RS256' });
-				return res.status(200).json({"access_token": token, "id": user._id});
-			} else {
-				return res.status(401).json({"error": "Invalid credentials."})
-			}
+		  if (result === true) {
+			const token = jwt.sign({ id: user._id }, privateKey, { algorithm: 'RS256' });
+			return res.status(200).json({"access_token": token, "id": user._id});
+		} else {
+			return res.status(401).json({"error": "Invalid credentials."})
+		  }
 		}).catch(error => {
-			return res.status(500).json({"error": error.message})
+		  return res.status(500).json({"error": error.message})
 		});
-		}
-		return res.status(401).json({"error": "Invalid credentials."})	
+	  }
+  
+	  return res.status(401).json({"error": "Invalid credentials."})
+  
 	} else {
-		res.status(400).json({ error: "username or password is missing" });
+	  res.status(400).json({"error": "Username or Password Missing"})
 	}
-});
+  });
+
+
+
 
 
 /* POST register /auth/register/ */
 /* requires username, email and password to signup. email and username have a unique constraint. 
    If you try to create a 2nd user an expected error is thrown */
 router.post("/register", async function (req, res, next) {
-	if (req.body.name && req.body.username && req.body.password && req.body.email && req.body.passwordConfirmation && isValidEmail(req.body.email)) {
+	if (req.body.name && req.body.username && req.body.password && req.body.email && req.body.passwordConfirmation) {
+		// if(isValidEmail(req.body.email) {}
 		if (req.body.passwordConfirmation === req.body.password) {
 			const user = new User({
 				name: req.body.name,
@@ -67,7 +67,7 @@ router.post("/register", async function (req, res, next) {
 			}
 
 			// Insertion into the MongoDB
-			await user.save().then((savedUser) => {
+			return await user.save().then((savedUser) => {
 				const token = jwt.sign({ id: user._id }, privateKey, { algorithm: 'RS256' });
 				return res.status(201).json({
 					id: savedUser._id,
@@ -84,6 +84,7 @@ router.post("/register", async function (req, res, next) {
 		return res.status(401).json({ error: "Invalid " });
 	}
 });
+
 
 router.patch("/update", async function(req, res, next) {
 	// need to validate the user making the request is the same as the user you are trying to update
