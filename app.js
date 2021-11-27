@@ -7,16 +7,18 @@ if (process.env.NODE_ENV !== 'production') {
     require('dotenv').config();
 }
 
+// initialize Express
+var app = express();
+
 // Create MongoDB connection
 require('./models/setupMongo')();
+
 
 // Routes defind and imported
 var toDoRouter = require('./routes/todoRouter');
 var authRouter = require('./routes/auth');
 var userRouter = require('./routes/userRouter');
 
-// initialize Express
-var app = express();
 
 // Middleware defined
 app.use(logger('dev'));
@@ -27,5 +29,12 @@ app.use(express.urlencoded({ extended: false }));
 app.use('/todo', toDoRouter);
 app.use('/auth', authRouter);
 app.use('/user', userRouter);
+
+
+app.use(express.static(path.join(__dirname, 'build')));
+
+app.get('/*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'build', 'index.html'));
+});
 
 module.exports = app;
