@@ -3,9 +3,9 @@ var path = require('path');
 var logger = require('morgan');
 
 // Load Environment variables if not Production
-if (process.env.NODE_ENV !== 'production') {
-    require('dotenv').config();
-}
+// if (process.env.NODE_ENV !== 'production') {
+require('dotenv').config();
+// }
 
 // initialize Express
 var app = express();
